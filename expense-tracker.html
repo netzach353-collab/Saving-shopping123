@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>נהל את הכסף שלך</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f3f4f8;
+      --card: #ffffff;
+      --primary: #1a2340;
+      --primary-fg: #ffffff;
+      --accent: #f59e0b;
+      --accent-fg: #1a2340;
+      --muted: #e8eaf0;
+      --muted-fg: #6b7280;
+      --border: #e2e5ec;
+      --text: #111827;
+      --destructive: #ef4444;
+      --radius: 0.75rem;
+      --font: 'Heebo', sans-serif;
+      --font-display: 'Rubik', sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--primary);
+      color: var(--primary-fg);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .topbar-logo {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; color: var(--accent-fg);
+      flex-shrink: 0;
+    }
+    .topbar h1 {
+      font-family: var(--font-display);
+      font-size: 18px; font-weight: 700;
+    }
+
+    /* LAYOUT */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background: var(--primary);
+      color: var(--primary-fg);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 12px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .sidebar-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: none;
+      background: transparent;
+      color: var(--primary-fg);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 0.75;
+      transition: all 0.15s;
+      text-align: right;
+      width: 100%;
+    }
+    .sidebar-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+    .sidebar-btn.active { opacity: 1; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+    .sidebar-btn svg { flex-shrink: 0; }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 20px;
+    }
+    .container { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+    /* SUMMARY BADGE */
+    .summary-card {
+      background: var(--primary);
+      color: var(--primary-fg);
+      border-radius: 18px;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(26,35,64,0.18);
+    }
+    .summary-label { font-size: 12px; opacity: 0.65; margin-bottom: 6px; }
+    .summary-amount { font-family: var(--font-display); font-size: 34px; font-weight: 700; }
+    .summary-count { font-size: 12px; opacity: 0.55; margin-top: 4px; }
+    .summary-icon {
+      width: 56px; height: 56px;
+      background: rgba(245,158,11,0.2);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+
+    /* BUTTON */
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px;
+      border: none; border-radius: var(--radius);
+      font-family: var(--font); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-accent { background: var(--accent); color: var(--accent-fg); }
+    .btn-accent:hover { opacity: 0.9; }
+    .btn-full { width: 100%; height: 48px; border-radius: var(--radius); }
+    .btn-ghost {
+      background: transparent; color: var(--muted-fg); font-size: 13px; padding: 8px 12px;
+    }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-danger { background: transparent; color: var(--destructive); font-size: 12px; padding: 8px 0; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: var(--font); }
+    .btn-danger:hover { opacity: 0.75; }
+
+    /* FORM */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .form-header { display: flex; align-items: center; justify-content: space-between; }
+    .form-header h3 { font-size: 15px; font-weight: 700; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; font-weight: 500; color: var(--muted-fg); }
+    input[type=text], input[type=number], textarea {
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font);
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      outline: none;
+      transition: border 0.15s;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: none; }
+    .img-upload-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      font-family: var(--font); font-size: 13px; color: var(--muted-fg);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .img-upload-btn:hover { border-color: var(--accent); color: var(--text); }
+    .img-preview-wrap { position: relative; width: 80px; height: 80px; }
+    .img-preview { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+    .img-remove {
+      position: absolute; top: -6px; left: -6px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,0.65); color: #fff;
+      border: none; cursor: pointer; font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* SEARCH */
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-fg); pointer-events: none; }
+    .search-wrap input { padding-right: 38px; }
+
+    /* EXPENSE CARD */
+    .expense-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s;
+    }
+    .expense-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .expense-main {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; cursor: pointer;
+    }
+    .exp-thumb {
+      width: 48px; height: 48px; border-radius: 12px; overflow: hidden;
+      flex-shrink: 0; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .exp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .exp-thumb-placeholder { background: rgba(245,158,11,0.1); font-size: 20px; font-weight: 900; color: var(--accent); }
+    .exp-info { flex: 1; min-width: 0; }
+    .exp-product { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .exp-biz { font-size: 12px; color: var(--muted-fg); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+    .exp-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .exp-price { font-family: var(--font-display); font-size: 16px; font-weight: 700; text-align: left; }
+    .exp-day { font-size: 10px; color: var(--muted-fg); text-align: left; }
+    .chevron { color: var(--muted-fg); transition: transform 0.2s; }
+    .chevron.open { transform: rotate(180deg); }
+
+    .expense-detail {
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .expense-detail.open { display: block; }
+    .detail-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--muted-fg); margin-top: 12px; }
+    .detail-row svg { margin-top: 1px; flex-shrink: 0; }
+    .detail-img { margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 280px; }
+    .detail-img img { width: 100%; object-fit: cover; max-height: 180px; display: block; }
+
+    /* MONTHLY PAGE */
+    .month-card {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      cursor: pointer; transition: all 0.2s; width: 100%;
+    }
+    .month-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .month-left { display: flex; align-items: center; gap: 14px; }
+    .month-icon { width: 48px; height: 48px; background: rgba(245,158,11,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .month-name { font-size: 15px; font-weight: 600; }
+    .month-count { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .month-amount { display: flex; align-items: center; gap: 8px; }
+    .month-total { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+    .back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-fg); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 0; }
+    .back-btn:hover { color: var(--text); }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 60px 20px; }
+    .empty-icon { width: 64px; height: 64px; background: var(--muted); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 14px; }
+    .empty p { font-size: 14px; color: var(--muted-fg); }
+
+    /* SECTION TITLE */
+    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .section-sub { font-size: 13px; color: var(--muted-fg); }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .hidden { display: none !important; }
+    .expenses-list { display: flex; flex-direction: column; gap: 10px; }
+    .monthly-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .auto-wrap {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  display: none;
+  z-index: 50;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: var(--muted);
+}
+
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-logo">₪</div>
+  <h1>נהל את הכסף שלך</h1>
+</header>
+
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button class="sidebar-btn active" id="nav-home" onclick="showPage('home')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      הוצאות
+    </button>
+    <button class="sidebar-btn" id="nav-monthly" onclick="showPage('monthly')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      סיכום חודשי
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="container">
+
+      <!-- Summary -->
+      <div class="summary-card" id="summary-card">
+        <div>
+          <div class="summary-label" id="summary-label">סה״כ הוצאות · טוען...</div>
+          <div class="summary-amount" id="summary-amount">₪0.00</div>
+          <div class="summary-count" id="summary-count">0 רכישות החודש</div>
+        </div>
+        <div class="summary-icon">📉</div>
+      </div>
+
+      <!-- Add Button -->
+      <button class="btn btn-accent btn-full" id="toggle-form-btn" onclick="toggleForm()">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        הוסף הוצאה חדשה
+      </button>
+
+      <!-- Form -->
+      <div class="form-card hidden" id="expense-form-card">
+        <div class="form-header">
+          <h3>הוצאה חדשה</h3>
+          <button class="btn-ghost btn" onclick="toggleForm()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-biz">שם בית עסק *</label>
+<div class="auto-wrap">
+  <input type="text" id="input-biz" placeholder="למשל: רמי לוי" oninput="showBizSuggestions()" />
+  <div class="dropdown" id="biz-dropdown"></div>
+</div>
+          </div>
+          <div class="form-group">
+            <label for="input-product">שם מוצר *</label>
+<div class="auto-wrap">
+  <input type="text" id="input-product" placeholder="למשל: חלב" oninput="showProductSuggestions()" />
+  <div class="dropdown" id="product-dropdown"></div>
+</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="input-price">מחיר (₪) *</label>
+<input type="number" id="input-price" list="price-list" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label for="input-note">הערה (לא חובה)</label>
+          <textarea id="input-note" rows="2" placeholder="הוסף הערה..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>תמונה (לא חובה)</label>
+          <input type="file" id="img-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)" />
+          <div id="img-upload-area">
+            <button class="img-upload-btn" type="button" onclick="document.getElementById('img-input').click()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              בחר תמונה
+            </button>
+          </div>
+          <div id="img-preview-area" class="hidden">
+            <div class="img-preview-wrap">
+              <img id="img-preview" class="img-preview" src="" alt="" />
+              <button class="img-remove" onclick="removeImage()">✕</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-accent btn-full" onclick="saveExpense()">שמור הוצאה</button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="חפש מוצר, בית עסק..." oninput="renderExpenses()" />
+      </div>
+
+      <!-- Expenses List -->
+      <div class="expenses-list" id="expenses-list"></div>
+      <div class="empty hidden" id="home-empty">
+        <div class="empty-icon">🧾</div>
+        <p id="home-empty-text">עדיין אין הוצאות החודש</p>
+      </div>
+    </div>
+
+    <!-- MONTHLY PAGE -->
+    <div id="page-monthly" class="container hidden">
+
+      <!-- Month detail view (hidden by default) -->
+      <div id="month-detail" class="hidden">
+        <button class="back-btn" onclick="closeMonthDetail()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          חזרה לכל החודשים
+        </button>
+        <div style="height:16px"></div>
+        <div class="summary-card" id="detail-summary">
+          <div>
+            <div class="summary-label" id="detail-label"></div>
+            <div class="summary-amount" id="detail-amount"></div>
+            <div class="summary-count" id="detail-count"></div>
+          </div>
+          <div class="summary-icon">📅</div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="expenses-list" id="detail-expenses-list"></div>
+        <div class="empty hidden" id="detail-empty">
+          <div class="empty-icon">🧾</div>
+          <p>אין הוצאות בחודש הזה</p>
+        </div>
+      </div>
+
+      <!-- Month list view -->
+      <div id="month-list-view">
+        <div>
+          <div class="section-title">סיכום חודשי</div>
+          <div class="section-sub">כל ההוצאות שלך לפי חודשים</div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="monthly-list" id="monthly-list"></div>
+        <div class="empty hidden" id="monthly-empty">
+          <div class="empty-icon">📅</div>
+          <p>עדיין אין היסטוריית הוצאות</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const STORAGE_KEY = 'expense_tracker_data';
+  const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  const HEBREW_MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
+  let currentImageBase64 = '';
+  let currentPage = 'home';
+  let currentDetailMonth = null;
+
+  // ---- STORAGE ----
+  function getExpenses() {
+    const d = localStorage.getItem(STORAGE_KEY);
+    return d ? JSON.parse(d) : [];
+  }
+  function saveExpensesToStorage(expenses) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+  }
+  function getMonthKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+  }
+  function getCurrentMonthKey() { return getMonthKey(new Date()); }
+  function getMonthLabel(key) {
+    const [year, month] = key.split('-');
+    return `${HEBREW_MONTHS[parseInt(month)-1]} ${year}`;
+  }
+
+  // ---- NAVIGATION ----
+  function showPage(page) {
+    currentPage = page;
+    document.getElementById('page-home').classList.toggle('hidden', page !== 'home');
+    document.getElementById('page-monthly').classList.toggle('hidden', page !== 'monthly');
+    document.getElementById('nav-home').classList.toggle('active', page === 'home');
+    document.getElementById('nav-monthly').classList.toggle('active', page === 'monthly');
+    if (page === 'monthly') renderMonthly();
+    if (page === 'home') { renderSummary(); renderExpenses(); }
+  }
+
+  // ---- FORM ----
+function toggleForm() {
+  const form = document.getElementById('expense-form-card');
+  const btn = document.getElementById('toggle-form-btn');
+
+  const isHidden = form.classList.contains('hidden');
+
+  if (isHidden) {
+    form.classList.remove('hidden');
+    btn.classList.add('hidden');
+  } else {
+    form.classList.add('hidden');
+    btn.classList.remove('hidden');
+  }
+}
+
+  function handleImageSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      currentImageBase64 = reader.result;
+      document.getElementById('img-preview').src = reader.result;
+      document.getElementById('img-upload-area').classList.add('hidden');
+      document.getElementById('img-preview-area').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    currentImageBase64 = '';
+    document.getElementById('img-input').value = '';
+    document.getElementById('img-upload-area').classList.remove('hidden');
+    document.getElementById('img-preview-area').classList.add('hidden');
+  }
+
+  function saveExpense() {
+    const biz = document.getElementById('input-biz').value.trim();
+    const product = document.getElementById('input-product').value.trim();
+    const priceVal = document.getElementById('input-price').value;
+    const note = document.getElementById('input-note').value.trim();
+    if (!biz || !product || !priceVal) { alert('נא למלא שם בית עסק, שם מוצר ומחיר'); return; }
+    const now = new Date();
+    const expense = {
+      id: Date.now().toString(),
+      businessName: biz,
+      productName: product,
+      price: parseFloat(priceVal),
+      note,
+      imageUrl: currentImageBase64,
+      timestamp: now.toISOString(),
+      date: now.toLocaleDateString('he-IL'),
+      time: now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+      dayName: HEBREW_DAYS[now.getDay()],
+      monthKey: getMonthKey(now),
+    };
+    const expenses = getExpenses();
+    expenses.unshift(expense);
+    saveExpensesToStorage(expenses);
+    // reset form
+    document.getElementById('input-biz').value = '';
+    document.getElementById('input-product').value = '';
+    document.getElementById('input-price').value = '';
+    document.getElementById('input-note').value = '';
+    removeImage();
+    toggleForm();
+    renderSummary();
+    renderExpenses();
+  
+  }
+
+  function deleteExpense(id) {
+    if (!confirm('למחוק הוצאה זו?')) return;
+    const expenses = getExpenses().filter(e => e.id !== id);
+    saveExpensesToStorage(expenses);
+    renderSummary();
+    renderExpenses();
+    if (currentDetailMonth) renderMonthDetail(currentDetailMonth);
+    renderMonthly();
+  }
+
+  // ---- RENDER SUMMARY ----
+  function renderSummary() {
+    const key = getCurrentMonthKey();
+    const expenses = getExpenses().filter(e => e.monthKey === key);
+    const total = expenses.reduce((s, e) => s + e.price, 0);
+    document.getElementById('summary-label').textContent = `סה״כ הוצאות · ${getMonthLabel(key)}`;
+    document.getElementById('summary-amount').textContent = `₪${total.toFixed(2)}`;
+    document.getElementById('summary-count').textContent = `${expenses.length} רכישות החודש`;
+  }
+
+  // ---- RENDER EXPENSES ----
+  function renderExpenses() {
+    const key = getCurrentMonthKey();
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    let expenses = getExpenses().filter(e => e.monthKey === key);
+    if (q) expenses = expenses.filter(e =>
+      e.productName.toLowerCase().includes(q) ||
+      e.businessName.toLowerCase().includes(q) ||
+      (e.note && e.note.toLowerCase().includes(q))
+    );
+    const list = document.getElementById('expenses-list');
+    const empty = document.getElementById('home-empty');
+    const emptyText = document.getElementById('home-empty-text');
+    if (expenses.length === 0) {
+      list.innerHTML = '';
+      emptyText.textContent = q ? 'לא נמצאו תוצאות' : 'עדיין אין הוצאות החודש';
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      list.innerHTML = expenses.map(e => expenseCardHTML(e)).join('');
+    }
+  }
+
+  function expenseCardHTML(e) {
+    const thumb = e.imageUrl
+      ? `<div class="exp-thumb"><img src="${e.imageUrl}" alt="" /></div>`
+      : `<div class="exp-thumb exp-thumb-placeholder">₪</div>`;
+    return `
+      <div class="expense-card" id="card-${e.id}">
+        <div class="expense-main" onclick="toggleCard('${e.id}')">
+          ${thumb}
+          <div class="exp-info">
+            <div class="exp-product">${esc(e.productName)}</div>
+            <div class="exp-biz">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${esc(e.businessName)}
+            </div>
+          </div>
+          <div class="exp-right">
+            <div>
+              <div class="exp-price">₪${e.price.toFixed(2)}</div>
+              <div class="exp-day">יום ${esc(e.dayName)} · ${esc(e.time)}</div>
+            </div>
+            <svg class="chevron" id="chevron-${e.id}" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="expense-detail" id="detail-${e.id}">
+          <div class="detail-row">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>${esc(e.date)} · יום ${esc(e.dayName)} · ${esc(e.time)}</span>
+          </div>
+          ${e.note ? `<div class="detail-row"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>${esc(e.note)}</span></div>` : ''}
+          ${e.imageUrl ? `<div class="detail-img"><img src="${e.imageUrl}" alt="" /></div>` : ''}
+          <button class="btn-danger" onclick="deleteExpense('${e.id}')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            מחק הוצאה
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function toggleCard(id) {
+    const detail = document.getElementById(`detail-${id}`);
+    const chevron = document.getElementById(`chevron-${id}`);
+    const open = detail.classList.contains('open');
+    detail.classList.toggle('open', !open);
+    chevron.classList.toggle('open', !open);
+  }
+
+  // ---- MONTHLY ----
+  function renderMonthly() {
+    const expenses = getExpenses();
+    const grouped = {};
+    expenses.forEach(e => {
+      if (!grouped[e.monthKey]) grouped[e.monthKey] = { total: 0, count: 0 };
+      grouped[e.monthKey].total += e.price;
+      grouped[e.monthKey].count += 1;
+    });
+    const months = Object.entries(grouped)
+      .map(([key, v]) => ({ key, ...v, label: getMonthLabel(key) }))
+      .sort((a, b) => b.key.localeCompare(a.key));
+
+    const list = document.getElementById('monthly-list');
+    const empty = document.getElementById('monthly-empty');
+    if (months.length === 0) {
+      list.innerHTML = '';
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      list.innerHTML = months.map(m => `
+        <button class="month-card" onclick="openMonthDetail('${m.key}')">
+          <div class="month-left">
+            <div class="month-icon">📅</div>
+            <div>
+              <div class="month-name">${esc(m.label)}</div>
+              <div class="month-count">${m.count} רכישות</div>
+            </div>
+          </div>
+          <div class="month-amount">
+            <span class="month-total">₪${m.total.toFixed(2)}</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+        </button>`).join('');
+    }
+  }
+
+  function openMonthDetail(monthKey) {
+    currentDetailMonth = monthKey;
+    document.getElementById('month-list-view').classList.add('hidden');
+    document.getElementById('month-detail').classList.remove('hidden');
+    renderMonthDetail(monthKey);
+  }
+
+  function renderMonthDetail(monthKey) {
+    const expenses = getExpenses().filter(e => e.monthKey === monthKey);
+    const total = expenses.reduce((s, e) => s + e.price, 0);
+    document.getElementById('detail-label').textContent = `סה״כ הוצאות · ${getMonthLabel(monthKey)}`;
+    document.getElementById('detail-amount').textContent = `₪${total.toFixed(2)}`;
+    document.getElementById('detail-count').textContent = `${expenses.length} רכישות`;
+    const list = document.getElementById('detail-expenses-list');
+    const empty = document.getElementById('detail-empty');
+    if (expenses.length === 0) {
+      list.innerHTML = '';
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      list.innerHTML = expenses.map(e => expenseCardHTML(e)).join('');
+    }
+  }
+
+  function closeMonthDetail() {
+    currentDetailMonth = null;
+    document.getElementById('month-detail').classList.add('hidden');
+    document.getElementById('month-list-view').classList.remove('hidden');
+    renderMonthly();
+  }
+
+  // ---- UTILS ----
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+ function getBizList() {
+  return [...new Set(getExpenses().map(e => e.businessName))];
+}
+
+function getProductList() {
+  return [...new Set(getExpenses().map(e => e.productName))];
+}
+
+
+function showBizSuggestions() {
+  const input = document.getElementById("input-biz").value.toLowerCase();
+  const box = document.getElementById("biz-dropdown");
+
+  const list = getBizList().filter(x => x.toLowerCase().includes(input));
+
+  renderDropdown(box, list, "input-biz");
+
+  box.style.display = list.length ? "block" : "none";
+}
+
+function showProductSuggestions() {
+  const input = document.getElementById("input-product").value.toLowerCase();
+  const box = document.getElementById("product-dropdown");
+
+  const list = getProductList().filter(x =>
+    x.toLowerCase().includes(input)
+  );
+
+  renderDropdown(box, list, "input-product");
+
+  box.style.display = list.length ? "block" : "none";
+}
+
+function renderDropdown(box, items, inputId) {
+  if (!items.length) {
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = items.map(v => `
+    <div class="dropdown-item"
+         onclick="selectItem('${inputId}', '${escapeHtml(v)}')">
+      ${escapeHtml(v)}
+    </div>
+  `).join("");
+}
+
+function selectItem(inputId, value) {
+  document.getElementById(inputId).value = value;
+
+  document.getElementById(inputId === "input-biz" ? "biz-dropdown" : "product-dropdown")
+    .style.display = "none";
+}
+
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".auto-wrap")) {
+    document.getElementById("biz-dropdown").style.display = "none";
+    document.getElementById("product-dropdown").style.display = "none";
+  }
+});
+
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+  // ---- INIT ----
+  renderSummary();
+  renderExpenses();
+</script>
+</body>
+</html>
