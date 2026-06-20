@@ -33,6 +33,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-top: 25px;
     }
 
     /* TOP BAR */
@@ -369,8 +370,7 @@
     <button class="sidebar-btn" id="nav-product-summary" onclick="showPage('product-summary')">
   📦 סיכום מוצר
 </button>
-<button class="sidebar-btn"
-        onclick="window.location.href='smoking.html'">
+<button class="sidebar-btn" onclick="window.location.href='./smoking.html'">
   🚬 מעקב עישון
 </button>
     <button class="sidebar-btn" id="nav-monthly" onclick="showPage('monthly')">
@@ -946,6 +946,9 @@ function showSummaryProductSuggestions() {
 function toggleSidebar() {
   document.querySelector(".sidebar").classList.toggle("open");
 }
+
+
+
   // ---- INIT ----
   renderSummary();
   renderExpenses();
