@@ -273,7 +273,6 @@
 
     /* RESPONSIVE */
     @media (max-width: 600px) {
-      .sidebar { display: none; }
       .form-row { grid-template-columns: 1fr; }
     }
 
@@ -311,6 +310,43 @@
   background: var(--muted);
 }
 
+
+.mobile-menu-btn {
+  margin-right: auto;
+  display: none;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: none;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar {
+    display: flex;
+    position: fixed;
+    top: 64px;
+    right: 0;
+    height: calc(100vh - 64px);
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
   </style>
 </head>
 <body>
@@ -319,6 +355,7 @@
 <header class="topbar">
   <div class="topbar-logo">₪</div>
   <h1>נהל את הכסף שלך</h1>
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
 </header>
 
 <div class="app-body">
@@ -329,6 +366,13 @@
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       הוצאות
     </button>
+    <button class="sidebar-btn" id="nav-product-summary" onclick="showPage('product-summary')">
+  📦 סיכום מוצר
+</button>
+<button class="sidebar-btn"
+        onclick="window.location.href='smoking.html'">
+  🚬 מעקב עישון
+</button>
     <button class="sidebar-btn" id="nav-monthly" onclick="showPage('monthly')">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       סיכום חודשי
@@ -463,6 +507,39 @@
       </div>
     </div>
 
+<div id="page-product-summary" class="container hidden">
+
+  <div class="section-title">סיכום מוצר</div>
+  <div class="section-sub">בדיקת עלות כוללת של מוצר מסוים</div>
+
+<div class="form-group">
+  <label>שם מוצר</label>
+
+  <div class="auto-wrap">
+    <input type="text"
+           id="product-summary-input"
+           placeholder="למשל: מסטיקים"
+           oninput="showSummaryProductSuggestions()">
+
+    <div class="dropdown" id="summary-product-dropdown"></div>
+  </div>
+</div>
+
+  <button class="btn btn-accent btn-full"
+          onclick="calculateProductTotal()">
+    חשב סה״כ
+  </button>
+
+  <div class="summary-card" style="margin-top:16px;">
+    <div>
+      <div class="summary-label">סה״כ שנקנה</div>
+      <div class="summary-amount" id="product-total">₪0.00</div>
+      <div class="summary-count" id="product-count">0 רכישות</div>
+    </div>
+    <div class="summary-icon">📦</div>
+  </div>
+
+</div>
   </main>
 </div>
 
@@ -493,15 +570,27 @@
   }
 
   // ---- NAVIGATION ----
-  function showPage(page) {
-    currentPage = page;
-    document.getElementById('page-home').classList.toggle('hidden', page !== 'home');
-    document.getElementById('page-monthly').classList.toggle('hidden', page !== 'monthly');
-    document.getElementById('nav-home').classList.toggle('active', page === 'home');
-    document.getElementById('nav-monthly').classList.toggle('active', page === 'monthly');
-    if (page === 'monthly') renderMonthly();
-    if (page === 'home') { renderSummary(); renderExpenses(); }
+function showPage(page) {
+  currentPage = page;
+
+  document.getElementById('page-home').classList.toggle('hidden', page !== 'home');
+  document.getElementById('page-monthly').classList.toggle('hidden', page !== 'monthly');
+  document.getElementById('page-product-summary').classList.toggle('hidden', page !== 'product-summary');
+
+  document.getElementById('nav-home').classList.toggle('active', page === 'home');
+  document.getElementById('nav-monthly').classList.toggle('active', page === 'monthly');
+  document.getElementById('nav-product-summary').classList.toggle('active', page === 'product-summary');
+
+  if (page === 'monthly') renderMonthly();
+  if (page === 'home') {
+    renderSummary();
+    renderExpenses();
   }
+
+  if (window.innerWidth <= 600) {
+  document.querySelector(".sidebar").classList.remove("open");
+}
+}
 
   // ---- FORM ----
 function toggleForm() {
@@ -786,8 +875,17 @@ function renderDropdown(box, items, inputId) {
 function selectItem(inputId, value) {
   document.getElementById(inputId).value = value;
 
-  document.getElementById(inputId === "input-biz" ? "biz-dropdown" : "product-dropdown")
-    .style.display = "none";
+  if (inputId === "input-biz") {
+    document.getElementById("biz-dropdown").style.display = "none";
+  }
+
+  if (inputId === "input-product") {
+    document.getElementById("product-dropdown").style.display = "none";
+  }
+
+  if (inputId === "product-summary-input") {
+    document.getElementById("summary-product-dropdown").style.display = "none";
+  }
 }
 
 
@@ -808,6 +906,46 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
+
+function calculateProductTotal() {
+  const name = document
+    .getElementById("product-summary-input")
+    .value
+    .trim()
+    .toLowerCase();
+
+  const expenses = getExpenses();
+
+  const matches = expenses.filter(e =>
+    e.productName.toLowerCase() === name
+  );
+
+  const total = matches.reduce((sum, e) => sum + e.price, 0);
+
+  document.getElementById("product-total").textContent =
+    `₪${total.toFixed(2)}`;
+
+  document.getElementById("product-count").textContent =
+    `${matches.length} רכישות`;
+}
+
+function showSummaryProductSuggestions() {
+  const input = document.getElementById("product-summary-input").value.toLowerCase();
+  const box = document.getElementById("summary-product-dropdown");
+
+  const list = getProductList().filter(x =>
+    x.toLowerCase().includes(input)
+  );
+
+  renderDropdown(box, list, "product-summary-input");
+
+  box.style.display = list.length ? "block" : "none";
+}
+
+
+function toggleSidebar() {
+  document.querySelector(".sidebar").classList.toggle("open");
+}
   // ---- INIT ----
   renderSummary();
   renderExpenses();
