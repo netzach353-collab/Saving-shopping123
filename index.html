@@ -33,6 +33,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-bottom: 50px;
     }
 
     /* TOP BAR */
@@ -354,6 +355,16 @@
   width: 100%;
   flex-shrink: 0;
 }
+
+select {
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg);
+  width: 100%;
+}
   </style>
 </head>
 <body>
@@ -436,6 +447,15 @@
           <label for="input-price">מחיר (₪) *</label>
 <input type="number" id="input-price" list="price-list" placeholder="0.00" />
         </div>
+
+        <div class="form-group">
+  <label>סוג תשלום *</label>
+
+  <select id="input-owner">
+    <option value="mine">מהכסף שלי</option>
+    <option value="other">לא מהכסף שלי</option>
+  </select>
+</div>
         <div class="form-group">
           <label for="input-note">הערה (לא חובה)</label>
           <textarea id="input-note" rows="2" placeholder="הוסף הערה..."></textarea>
@@ -636,6 +656,7 @@ function toggleForm() {
   }
 
   function saveExpense() {
+    const owner = document.getElementById('input-owner').value;
     const biz = document.getElementById('input-biz').value.trim();
     const product = document.getElementById('input-product').value.trim();
     const priceVal = document.getElementById('input-price').value;
@@ -648,6 +669,7 @@ function toggleForm() {
       productName: product,
       price: parseFloat(priceVal),
       note,
+      owner,
       imageUrl: currentImageBase64,
       timestamp: now.toISOString(),
       date: now.toLocaleDateString('he-IL'),
@@ -842,26 +864,38 @@ function getProductList() {
 
 
 function showBizSuggestions() {
-  const input = document.getElementById("input-biz").value.toLowerCase();
+  const input = document.getElementById("input-biz").value.trim().toLowerCase();
   const box = document.getElementById("biz-dropdown");
 
-  const list = getBizList().filter(x => x.toLowerCase().includes(input));
+  if (!input) {
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  const list = getBizList().filter(x =>
+    x.toLowerCase().includes(input)
+  );
 
   renderDropdown(box, list, "input-biz");
-
   box.style.display = list.length ? "block" : "none";
 }
 
 function showProductSuggestions() {
-  const input = document.getElementById("input-product").value.toLowerCase();
+  const input = document.getElementById("input-product").value.trim().toLowerCase();
   const box = document.getElementById("product-dropdown");
+
+  if (!input) {
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
 
   const list = getProductList().filter(x =>
     x.toLowerCase().includes(input)
   );
 
   renderDropdown(box, list, "input-product");
-
   box.style.display = list.length ? "block" : "none";
 }
 
@@ -927,25 +961,40 @@ function calculateProductTotal() {
     e.productName.toLowerCase() === name
   );
 
-  const total = matches.reduce((sum, e) => sum + e.price, 0);
+  const all = matches.reduce((s,e) => s + e.price, 0);
 
-  document.getElementById("product-total").textContent =
-    `₪${total.toFixed(2)}`;
+  const mine = matches
+    .filter(e => e.owner === "mine")
+    .reduce((s,e) => s + e.price, 0);
+
+  const other = matches
+    .filter(e => e.owner === "other")
+    .reduce((s,e) => s + e.price, 0);
+
+  document.getElementById("product-total").innerHTML =
+    `שלי ₪${mine.toFixed(2)}<br>
+     אחר ₪${other.toFixed(2)}<br>
+     סה"כ ₪${all.toFixed(2)}`;
 
   document.getElementById("product-count").textContent =
     `${matches.length} רכישות`;
 }
 
 function showSummaryProductSuggestions() {
-  const input = document.getElementById("product-summary-input").value.toLowerCase();
+  const input = document.getElementById("product-summary-input").value.trim().toLowerCase();
   const box = document.getElementById("summary-product-dropdown");
+
+  if (!input) {
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
 
   const list = getProductList().filter(x =>
     x.toLowerCase().includes(input)
   );
 
   renderDropdown(box, list, "product-summary-input");
-
   box.style.display = list.length ? "block" : "none";
 }
 
