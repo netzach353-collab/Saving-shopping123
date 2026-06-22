@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>משימות</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f3f4f8;
+      --card: #ffffff;
+      --primary: #14323b;
+      --primary-fg: #ffffff;
+      --accent: #14b8a6;
+      --accent-light: rgba(20,184,166,0.12);
+      --accent-fg: #ffffff;
+      --muted: #e8eaf0;
+      --muted-fg: #6b7280;
+      --border: #e2e5ec;
+      --text: #111827;
+      --destructive: #ef4444;
+      --success: #10b981;
+      --radius: 0.75rem;
+      --font: 'Heebo', sans-serif;
+      --font-display: 'Rubik', sans-serif;
+    }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .topbar { background: var(--primary); color: var(--primary-fg); height: 64px; display: flex; align-items: center; padding: 0 20px; gap: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.18); position: sticky; top: 0; z-index: 30; }
+    .topbar-logo { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .topbar h1 { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    .sidebar { width: 230px; background: var(--primary); color: var(--primary-fg); display: flex; flex-direction: column; padding: 16px 12px; gap: 4px; flex-shrink: 0; overflow-y: auto; }
+    .sidebar-nav-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius); border: none; background: transparent; color: var(--primary-fg); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; opacity: 0.75; transition: all 0.15s; text-align: right; width: 100%; }
+    .sidebar-nav-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+    .sidebar-nav-btn.active { opacity: 1; background: var(--accent); color: #fff; font-weight: 600; }
+    .sidebar-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 4px; }
+    .sidebar-section-title { font-size: 10px; font-weight: 700; opacity: 0.45; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 14px 6px; }
+
+    .stat-block { padding: 10px 14px; }
+    .stat-item { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .stat-item:last-child { border-bottom: none; }
+    .stat-label { font-size: 11px; opacity: 0.55; margin-bottom: 3px; }
+    .stat-value { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+    .stat-sub { font-size: 11px; opacity: 0.5; margin-top: 2px; }
+
+    .main { flex: 1; overflow-y: auto; padding: 28px 20px; }
+    .container { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+    .summary-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .summary-card { background: var(--primary); color: var(--primary-fg); border-radius: 18px; padding: 16px 18px; box-shadow: 0 4px 20px rgba(20,50,59,0.18); }
+    .summary-card.accent-card { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+    .summary-card.muted-card { background: #475569; }
+    .summary-label { font-size: 11px; opacity: 0.65; margin-bottom: 5px; }
+    .summary-amount { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+    .summary-sub { font-size: 11px; opacity: 0.55; margin-top: 3px; }
+
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { opacity: 0.9; }
+    .btn-full { width: 100%; height: 48px; }
+    .btn-ghost { background: transparent; color: var(--muted-fg); font-size: 13px; padding: 8px 12px; }
+    .btn-danger { background: transparent; color: var(--destructive); font-size: 12px; padding: 8px 0; display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: var(--font); }
+    .btn-danger:hover { opacity: 0.75; }
+
+    .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+    .form-header { display: flex; align-items: center; justify-content: space-between; }
+    .form-header h3 { font-size: 15px; font-weight: 700; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; font-weight: 500; color: var(--muted-fg); }
+   input[type=text], input[type=datetime-local], textarea { padding: 10px 13px; border: 1px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; background: var(--bg); color: var(--text); width: 100%; outline: none; transition: border 0.15s; }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: none; }
+
+    .filter-row { display: flex; gap: 8px; }
+    .filter-btn { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--muted-fg); cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover { border-color: var(--accent); }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .task-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
+    .task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .task-card.done { opacity: 0.6; }
+    .task-main { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; cursor: pointer; }
+    .task-check { width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; margin-top: 1px; }
+    .task-check:hover { border-color: var(--accent); }
+    .task-check.checked { background: var(--success); border-color: var(--success); }
+    .task-check.checked svg { display: block; }
+    .task-check svg { display: none; }
+    .task-info { flex: 1; min-width: 0; }
+    .task-title { font-size: 14px; font-weight: 600; }
+    .task-card.done .task-title { text-decoration: line-through; color: var(--muted-fg); }
+    .task-meta { font-size: 12px; color: var(--muted-fg); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+    .task-note { font-size: 12px; color: var(--muted-fg); margin-top: 4px; font-style: italic; }
+    .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .icon-btn { background: transparent; border: none; padding: 6px; border-radius: 8px; cursor: pointer; color: var(--muted-fg); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .icon-btn:hover { background: var(--muted); color: var(--text); }
+
+    .empty { text-align: center; padding: 60px 20px; }
+    .empty-icon { width: 64px; height: 64px; background: var(--muted); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 14px; }
+    .empty p { font-size: 14px; color: var(--muted-fg); }
+
+    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .section-sub { font-size: 13px; color: var(--muted-fg); }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .summary-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-logo">✓</div>
+  <h1>המשימות שלי</h1>
+</header>
+
+<div class="app-body">
+
+  <aside class="sidebar">
+    <button class="sidebar-nav-btn active" id="nav-home" onclick="showPage('home')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      משימות
+    </button>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-title">סטטיסטיקה</div>
+
+    <div class="stat-block">
+      <div class="stat-item">
+        <div class="stat-label">סה״כ משימות</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">הושלמו</div>
+        <div class="stat-value" id="stat-done" style="color:#34d399">0</div>
+        <div class="stat-sub" id="stat-done-pct"></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">פתוחות</div>
+        <div class="stat-value" id="stat-open" style="color:#fbbf24">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">נוצרו היום</div>
+        <div class="stat-value" id="stat-today">0</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="page-home" class="container">
+
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-label">סה״כ</div>
+          <div class="summary-amount" id="sum-total">0</div>
+          <div class="summary-sub">משימות</div>
+        </div>
+        <div class="summary-card accent-card">
+          <div class="summary-label">הושלמו</div>
+          <div class="summary-amount" id="sum-done">0</div>
+          <div class="summary-sub">✓ בוצעו</div>
+        </div>
+        <div class="summary-card muted-card">
+          <div class="summary-label">פתוחות</div>
+          <div class="summary-amount" id="sum-open">0</div>
+          <div class="summary-sub">לעשות</div>
+        </div>
+      </div>
+
+      <button class="btn btn-accent btn-full" id="toggle-form-btn" onclick="toggleForm()">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        הוסף משימה חדשה
+      </button>
+
+      <div class="form-card hidden" id="task-form-card">
+        <div class="form-header">
+          <h3>משימה חדשה</h3>
+          <button class="btn btn-ghost" onclick="toggleForm()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="input-title">כותרת משימה *</label>
+          <input type="text" id="input-title" placeholder="למשל: לקנות חלב" />
+        </div>
+       <div class="form-group">
+  <label>מתי לבצע?</label>
+
+  <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  ">
+    <input type="date" id="input-due-date" />
+    <input type="time" id="input-due-time" />
+  </div>
+</div>
+        <div class="form-group">
+          <label for="input-note">הערה (לא חובה)</label>
+          <textarea id="input-note" rows="2" placeholder="פרטים נוספים..."></textarea>
+        </div>
+        <button class="btn btn-accent btn-full" onclick="saveTask()">שמור משימה</button>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-btn" data-filter="open" onclick="setFilter('open')">פתוחות</button>
+        <button class="filter-btn" data-filter="done" onclick="setFilter('done')">הושלמו</button>
+      </div>
+
+      <div>
+        <div class="list" id="task-list"></div>
+        <div class="empty hidden" id="task-empty">
+          <div class="empty-icon">📝</div>
+          <p id="task-empty-text">אין משימות עדיין</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const STORAGE_KEY = 'task_tracker_data';
+  const HEBREW_DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+  let currentFilter = 'all';
+
+  function getTasks() { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : []; }
+  function saveTasks(tasks) { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
+
+  function showPage(page) {
+    // single page app - just re-render
+    renderAll();
+  }
+
+ function toggleForm() {
+  const form = document.getElementById('task-form-card');
+  const btn = document.getElementById('toggle-form-btn');
+
+  if (form.classList.contains('hidden')) {
+    form.classList.remove('hidden');
+    btn.classList.add('hidden');
+  } else {
+    form.classList.add('hidden');
+    btn.classList.remove('hidden');
+  }
+}
+
+  function saveTask() {
+  const title = document.getElementById('input-title').value.trim();
+  const note = document.getElementById('input-note').value.trim();
+
+  const dueDateInput = document.getElementById('input-due-date').value;
+  const dueTimeInput = document.getElementById('input-due-time').value;
+
+  let dueDate = null;
+
+  if (dueDateInput) {
+    dueDate = new Date(`${dueDateInput}T${dueTimeInput || '00:00'}`);
+  }
+
+  if (!title) {
+    alert('נא להזין כותרת');
+    return;
+  }
+
+  const now = new Date();
+  const tasks = getTasks();
+
+  tasks.unshift({
+    id: Date.now().toString() + Math.random(),
+    title,
+    note,
+    dueAt: dueDate ? dueDate.toISOString() : null,
+    dueDate: dueDate ? dueDate.toLocaleDateString('he-IL') : '',
+    dueTime: dueDate ? dueDate.toLocaleTimeString('he-IL', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : '',
+    dueDay: dueDate ? HEBREW_DAYS[dueDate.getDay()] : '',
+    done: false,
+    createdAt: now.toISOString(),
+    createdDate: now.toLocaleDateString('he-IL'),
+    createdTime: now.toLocaleTimeString('he-IL', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    createdDay: HEBREW_DAYS[now.getDay()],
+    completedAt: null
+  });
+
+  saveTasks(tasks);
+
+  if (dueDate && window.ReactNativeWebView) {
+  window.ReactNativeWebView.postMessage(JSON.stringify({
+    type: "schedule-task-notification",
+    title: title,
+    dueAt: dueDate.toISOString()
+  }));
+}
+
+  document.getElementById('input-title').value = '';
+  document.getElementById('input-note').value = '';
+  document.getElementById('input-due-date').value = '';
+  document.getElementById('input-due-time').value = '';
+
+  toggleForm();
+  renderAll();
+}
+
+  function toggleDone(id) {
+    const tasks = getTasks();
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    t.completedAt = t.done ? new Date().toISOString() : null;
+    saveTasks(tasks);
+    renderAll();
+  }
+
+  function deleteTask(id) {
+    if (!confirm('למחוק משימה זו?')) return;
+    saveTasks(getTasks().filter(t => t.id !== id));
+    renderAll();
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === f);
+    });
+    renderList();
+  }
+
+  function renderAll() {
+    renderSummary();
+    renderStats();
+    renderList();
+  }
+
+  function renderSummary() {
+    const tasks = getTasks();
+    const done = tasks.filter(t => t.done).length;
+    const open = tasks.length - done;
+    document.getElementById('sum-total').textContent = tasks.length;
+    document.getElementById('sum-done').textContent = done;
+    document.getElementById('sum-open').textContent = open;
+  }
+
+  function renderStats() {
+    const tasks = getTasks();
+    const done = tasks.filter(t => t.done).length;
+    const open = tasks.length - done;
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayCount = tasks.filter(t => new Date(t.createdAt) >= todayStart).length;
+    document.getElementById('stat-total').textContent = tasks.length;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-done-pct').textContent = tasks.length > 0 ? `${Math.round(done/tasks.length*100)}% השלמה` : '';
+    document.getElementById('stat-open').textContent = open;
+    document.getElementById('stat-today').textContent = todayCount;
+  }
+
+  function renderList() {
+    let tasks = getTasks();
+    if (currentFilter === 'open') tasks = tasks.filter(t => !t.done);
+    if (currentFilter === 'done') tasks = tasks.filter(t => t.done);
+
+    const list = document.getElementById('task-list');
+    const empty = document.getElementById('task-empty');
+    const emptyText = document.getElementById('task-empty-text');
+
+    if (tasks.length === 0) {
+      list.innerHTML = '';
+      const msgs = { all: 'אין משימות עדיין', open: 'אין משימות פתוחות 🎉', done: 'אין משימות שהושלמו' };
+      emptyText.textContent = msgs[currentFilter] || 'אין משימות';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    list.innerHTML = tasks.map(t => taskCardHTML(t)).join('');
+  }
+
+  function taskCardHTML(t) {
+    return `
+      <div class="task-card ${t.done ? 'done' : ''}" id="tc-${t.id}">
+        <div class="task-main">
+          <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleDone('${t.id}')">
+            <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="task-info" onclick="toggleDone('${t.id}')">
+            <div class="task-title">${esc(t.title)}</div>
+            <div class="task-meta">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              נוצר: ${esc(t.createdDate)} · יום ${esc(t.createdDay)} · ${esc(t.createdTime)}
+            </div>
+            ${t.note ? `<div class="task-note">${esc(t.note)}</div>` : ''}
+            ${t.done && t.completedAt ? `<div class="task-meta" style="color:var(--success)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> הושלם: ${esc(new Date(t.completedAt).toLocaleDateString('he-IL'))}</div>` : ''}
+          </div>
+          ${t.dueAt ? `<div class="task-meta" style="color:${new Date(t.dueAt) < new Date() && !t.done ? 'var(--destructive)' : 'var(--accent)'}">
+  ⏰ לביצוע: ${esc(t.dueDate)} · יום ${esc(t.dueDay)} · ${esc(t.dueTime)}
+</div>` : ''}
+          <div class="task-actions">
+            <button class="icon-btn" onclick="deleteTask('${t.id}')" title="מחק">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  renderAll();
+</script>
+</body>
+</html>
