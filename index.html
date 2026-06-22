@@ -917,24 +917,19 @@ function renderDropdown(box, items, inputId) {
 function selectItem(inputId, value) {
   document.getElementById(inputId).value = value;
 
-  if (inputId === "input-biz") {
-    document.getElementById("biz-dropdown").style.display = "none";
-  }
-
-  if (inputId === "input-product") {
-    document.getElementById("product-dropdown").style.display = "none";
-  }
-
-  if (inputId === "product-summary-input") {
-    document.getElementById("summary-product-dropdown").style.display = "none";
-  }
+  closeAllDropdowns();
 }
 
+function closeAllDropdowns() {
+  document.querySelectorAll(".dropdown").forEach(box => {
+    box.style.display = "none";
+    box.innerHTML = "";
+  });
+}
 
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".auto-wrap")) {
-    document.getElementById("biz-dropdown").style.display = "none";
-    document.getElementById("product-dropdown").style.display = "none";
+    closeAllDropdowns();
   }
 });
 
