@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ניהול נסיעות</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f3f4f6;
+    padding:20px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+}
+
+.card{
+    background:#fff;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+h1{
+    margin-bottom:20px;
+    text-align:center;
+}
+    select{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:18px;
+    margin-bottom:15px;
+    background:#fff;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#f59e0b;
+    font-size:18px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.summary{
+    font-size:18px;
+    line-height:1.8;
+}
+
+.ride{
+    background:#fafafa;
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:10px;
+}
+
+.delete{
+    background:#ef4444;
+    color:white;
+    margin-top:10px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>🚕 ניהול נסיעות</h1>
+
+<div class="card">
+
+<label for="passengers">בחר מספר נוסעים</label>
+
+<select id="passengers">
+    <option value="">בחר...</option>
+    <option value="1">1 נוסע</option>
+    <option value="2">2 נוסעים</option>
+    <option value="3">3 נוסעים</option>
+    <option value="4">4 נוסעים</option>
+    <option value="5">5 נוסעים</option>
+    <option value="6">6 נוסעים</option>
+    <option value="7">7 נוסעים</option>
+</select>
+
+<button onclick="saveRide()">
+שמור נסיעה
+</button>
+
+</div>
+
+<div class="card summary">
+
+<div>סה"כ נסיעות:
+<b id="ridesCount">0</b>
+</div>
+
+<div>סה"כ נוסעים:
+<b id="passengersCount">0</b>
+</div>
+
+<div>סה"כ הכנסות:
+<b id="moneyTotal">₪0</b>
+</div>
+
+</div>
+
+<div id="rides"></div>
+
+</div>
+
+<script>
+
+const STORAGE_KEY="rides_data";
+
+function getRides(){
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+
+function saveRide(){
+
+    const passengers=parseInt(document.getElementById("passengers").value);
+
+    if(!passengers||passengers<1){
+        alert("הכנס מספר נוסעים");
+        return;
+    }
+
+    const now=new Date();
+
+    const ride={
+        id:Date.now(),
+
+        passengers:passengers,
+
+        money:passengers*5,
+
+        date:now.toLocaleDateString("he-IL"),
+
+        time:now.toLocaleTimeString("he-IL",{
+            hour:"2-digit",
+            minute:"2-digit"
+        })
+    };
+
+    const rides=getRides();
+
+    rides.unshift(ride);
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(rides)
+    );
+
+    document.getElementById("passengers").value="";
+
+    render();
+
+}
+
+function deleteRide(id){
+
+    let rides=getRides();
+
+    rides=rides.filter(r=>r.id!==id);
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(rides)
+    );
+
+    render();
+
+}
+
+function render(){
+
+    const rides=getRides();
+
+    let html="";
+
+    let totalPassengers=0;
+
+    let totalMoney=0;
+
+    rides.forEach(r=>{
+
+        totalPassengers+=r.passengers;
+
+        totalMoney+=r.money;
+
+        html+=`
+        <div class="ride">
+
+        <b>${r.passengers} נוסעים</b><br>
+
+        הכנסה:
+        ₪${r.money}<br>
+
+        ${r.date}
+        |
+        ${r.time}
+
+        <button
+        class="delete"
+        onclick="deleteRide(${r.id})">
+        מחק
+        </button>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById("rides").innerHTML=html;
+
+    document.getElementById("ridesCount").textContent=rides.length;
+
+    document.getElementById("passengersCount").textContent=totalPassengers;
+
+    document.getElementById("moneyTotal").textContent="₪"+totalMoney;
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
