@@ -401,10 +401,7 @@ function addPurchase() {
     return;
   }
 
-  if (price > getBalance()) {
-    showToast("אין מספיק כסף בקופה");
-    return;
-  }
+  
 
   data.purchases.push({
 
