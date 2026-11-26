@@ -200,6 +200,34 @@ button {
 </button>
 
 </section>
+  
+  <!-- הוספת הכנסה -->
+<section class="card">
+
+<h2>הוספת הכנסה</h2>
+
+<label for="incomeName">מקור ההכנסה</label>
+<input
+  id="incomeName"
+  type="text"
+  placeholder="לדוגמה: מתנה"
+>
+
+<label for="incomeAmount">סכום ההכנסה</label>
+<input
+  id="incomeAmount"
+  type="number"
+  min="0.01"
+  step="0.01"
+  placeholder="סכום בשקלים"
+>
+
+<button class="add-btn" onclick="addIncome()">
+הוסף הכנסה
+</button>
+
+</section>
+  
 <section class="card">
 
 <h2>גיבוי נתונים</h2>
@@ -250,10 +278,14 @@ let data = JSON.parse(
 if (!data || !data.startDate || !Array.isArray(data.purchases)) {
 
   data = {
-    startDate: getToday(),
-    purchases: []
-  };
-
+  startDate: getToday(),
+  purchases: [],
+  incomes: []
+};
+  if (!Array.isArray(data.incomes)) {
+  data.incomes = [];
+  saveData();
+}
   saveData();
 }
 
@@ -300,9 +332,61 @@ function getSpent() {
 
 // יתרה
 function getBalance() {
-  return getDeposits() - getSpent();
-}
 
+  const incomeTotal = data.incomes.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
+
+  return getDeposits() + incomeTotal - getSpent();
+
+}
+  // הוספת הכנסה
+function addIncome() {
+
+  const name =
+    document.getElementById("incomeName").value.trim();
+
+  const amount =
+    Number(document.getElementById("incomeAmount").value);
+
+  if (!name) {
+    showToast("צריך להכניס מקור הכנסה");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showToast("צריך להכניס סכום תקין");
+    return;
+  }
+
+  const incomeAmount = Number(amount.toFixed(2));
+
+  const balanceAfter = getBalance() + incomeAmount;
+
+  data.incomes.push({
+
+    name: name,
+
+    amount: incomeAmount,
+
+    balanceAfter: Number(balanceAfter.toFixed(2)),
+
+    date: new Date().toISOString()
+
+  });
+
+  saveData();
+
+  document.getElementById("incomeName").value = "";
+  document.getElementById("incomeAmount").value = "";
+
+  render();
+
+  showToast("ההכנסה נשמרה בהצלחה");
+
+}
+  
 // הצגת כסף
 function money(value) {
   return value.toLocaleString("he-IL", {
@@ -322,72 +406,7 @@ function formatDate(date) {
 }
 
 // הצגת כל הנתונים
-function render() {
 
-  const days = getDays();
-  const deposits = getDeposits();
-  const spent = getSpent();
-  const balance = getBalance();
-
-  document.getElementById("balance").textContent =
-    money(balance);
-
-  document.getElementById("summary").textContent =
-    days + " ימי חיסכון × 60 ₪ = " +
-    money(deposits) +
-    " | סך הקניות: " +
-    money(spent);
-
-  const container =
-    document.getElementById("purchases");
-
-  container.innerHTML = "";
-
-  if (data.purchases.length === 0) {
-
-    container.innerHTML =
-      '<div class="empty">עדיין אין קניות</div>';
-
-    return;
-  }
-
-  // החדשות ביותר למעלה
-  [...data.purchases].reverse().forEach(item => {
-
-    const box = document.createElement("div");
-    box.className = "purchase";
-
-    const top = document.createElement("div");
-    top.className = "purchase-top";
-
-    const name = document.createElement("div");
-    name.className = "product-name";
-    name.textContent = item.name;
-
-    const price = document.createElement("div");
-    price.className = "product-price";
-    price.textContent = "− " + money(item.price);
-
-    const date = document.createElement("div");
-    date.className = "purchase-date";
-    date.textContent = formatDate(item.date);
-
-    const balance = document.createElement("div");
-balance.className = "purchase-date";
-balance.textContent =
-  "יתרה לאחר הקנייה: " + money(item.balanceAfter);
-
-top.append(name, price);
-
-box.append(top, balance, date);
-
-container.append(box);
-
-    
-
-  });
-
-}
 
 // הוספת קנייה
 function addPurchase() {
@@ -483,6 +502,102 @@ async function copyData() {
     showToast("הנתונים הועתקו");
 
   }
+
+}
+
+  
+function render() {
+
+  const days = getDays();
+  const deposits = getDeposits();
+  const spent = getSpent();
+  const balance = getBalance();
+
+  document.getElementById("balance").textContent =
+    money(balance);
+
+  document.getElementById("summary").textContent =
+    days + " ימי חיסכון × 60 ₪ = " +
+    money(deposits) +
+    " | סך הקניות: " +
+    money(spent);
+
+  const container =
+    document.getElementById("purchases");
+
+  container.innerHTML = "";
+
+  // איחוד הכנסות וקניות
+  const transactions = [
+
+    ...data.purchases.map(item => ({
+      ...item,
+      type: "purchase",
+      amount: item.price
+    })),
+
+    ...data.incomes.map(item => ({
+      ...item,
+      type: "income"
+    }))
+
+  ];
+
+  if (transactions.length === 0) {
+
+    container.innerHTML =
+      '<div class="empty">עדיין אין פעולות</div>';
+
+    return;
+  }
+
+  // החדשות ביותר למעלה
+  transactions.sort((a, b) =>
+    new Date(b.date) - new Date(a.date)
+  );
+
+  transactions.forEach(item => {
+
+    const box = document.createElement("div");
+    box.className = "purchase";
+
+    const top = document.createElement("div");
+    top.className = "purchase-top";
+
+    const name = document.createElement("div");
+    name.className = "product-name";
+    name.textContent =
+      (item.type === "income" ? "⬆ " : "⬇ ") + item.name;
+
+    const price = document.createElement("div");
+    price.className = "product-price";
+
+    if (item.type === "income") {
+
+      price.style.color = "#16834a";
+      price.textContent = "+ " + money(item.amount);
+
+    } else {
+
+      price.textContent = "− " + money(item.amount);
+
+    }
+
+    const balance = document.createElement("div");
+    balance.className = "purchase-date";
+
+    balance.textContent =
+      "יתרה לאחר הפעולה: " + money(item.balanceAfter);
+
+    const date = document.createElement("div");
+    date.className = "purchase-date";
+    date.textContent = formatDate(item.date);
+
+    top.append(name, price);
+    box.append(top, balance, date);
+    container.append(box);
+
+  });
 
 }
 
