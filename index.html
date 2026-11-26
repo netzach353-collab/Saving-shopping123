@@ -256,6 +256,8 @@ button {
 <script>
 
 // הגדרות
+
+// הגדרות
 const DAILY_AMOUNT = 60;
 const STORAGE_KEY = "mySavingsPot";
 
@@ -271,22 +273,31 @@ function getToday() {
 }
 
 // טעינת נתונים
-let data = JSON.parse(
-  localStorage.getItem(STORAGE_KEY)
-);
+let data;
 
-if (!data || !data.startDate || !Array.isArray(data.purchases)) {
-
-  data = {
-  startDate: getToday(),
-  purchases: [],
-  incomes: []
-};
-  if (!Array.isArray(data.incomes)) {
-  data.incomes = [];
-  saveData();
+try {
+  data = JSON.parse(
+    localStorage.getItem(STORAGE_KEY)
+  );
+} catch (error) {
+  data = null;
 }
-  saveData();
+
+if (
+  !data ||
+  !data.startDate ||
+  !Array.isArray(data.purchases)
+) {
+  data = {
+    startDate: getToday(),
+    purchases: [],
+    incomes: []
+  };
+}
+
+// תמיכה בנתונים ישנים
+if (!Array.isArray(data.incomes)) {
+  data.incomes = [];
 }
 
 // שמירה
@@ -296,6 +307,8 @@ function saveData() {
     JSON.stringify(data)
   );
 }
+
+saveData();
 
 // חישוב ימים
 function getDays() {
@@ -324,7 +337,7 @@ function getDeposits() {
 function getSpent() {
 
   return data.purchases.reduce(
-    (sum, item) => sum + item.price,
+    (sum, item) => sum + Number(item.price || 0),
     0
   );
 
@@ -334,14 +347,33 @@ function getSpent() {
 function getBalance() {
 
   const incomeTotal = data.incomes.reduce(
-    (sum, item) => sum + item.amount,
+    (sum, item) => sum + Number(item.amount || 0),
     0
   );
 
   return getDeposits() + incomeTotal - getSpent();
 
 }
-  // הוספת הכנסה
+
+// הצגת כסף
+function money(value) {
+  return value.toLocaleString("he-IL", {
+    style: "currency",
+    currency: "ILS"
+  });
+}
+
+// הצגת תאריך ושעה
+function formatDate(date) {
+
+  return new Date(date).toLocaleString("he-IL", {
+    dateStyle: "short",
+    timeStyle: "medium"
+  });
+
+}
+
+// הוספת הכנסה
 function addIncome() {
 
   const name =
@@ -386,27 +418,6 @@ function addIncome() {
   showToast("ההכנסה נשמרה בהצלחה");
 
 }
-  
-// הצגת כסף
-function money(value) {
-  return value.toLocaleString("he-IL", {
-    style: "currency",
-    currency: "ILS"
-  });
-}
-
-// הצגת תאריך ושעה
-function formatDate(date) {
-
-  return new Date(date).toLocaleString("he-IL", {
-    dateStyle: "short",
-    timeStyle: "medium"
-  });
-
-}
-
-// הצגת כל הנתונים
-
 
 // הוספת קנייה
 function addPurchase() {
@@ -427,23 +438,21 @@ function addPurchase() {
     return;
   }
 
-  
-
   const purchasePrice = Number(price.toFixed(2));
 
-const balanceAfter = getBalance() - purchasePrice;
+  const balanceAfter = getBalance() - purchasePrice;
 
-data.purchases.push({
+  data.purchases.push({
 
-  name: name,
+    name: name,
 
-  price: purchasePrice,
+    price: purchasePrice,
 
-  balanceAfter: Number(balanceAfter.toFixed(2)),
+    balanceAfter: Number(balanceAfter.toFixed(2)),
 
-  date: new Date().toISOString()
+    date: new Date().toISOString()
 
-});
+  });
 
   saveData();
 
@@ -459,6 +468,11 @@ data.purchases.push({
 // העתקת כל הנתונים
 async function copyData() {
 
+  const incomeTotal = data.incomes.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
+
   const backup = {
 
     startDate: data.startDate,
@@ -469,11 +483,15 @@ async function copyData() {
 
     totalDeposits: getDeposits(),
 
+    totalIncomes: incomeTotal,
+
     totalPurchases: getSpent(),
 
     currentBalance: getBalance(),
 
-    purchases: data.purchases
+    purchases: data.purchases,
+
+    incomes: data.incomes
 
   };
 
@@ -505,7 +523,7 @@ async function copyData() {
 
 }
 
-  
+// הצגת כל הנתונים
 function render() {
 
   const days = getDays();
@@ -513,12 +531,19 @@ function render() {
   const spent = getSpent();
   const balance = getBalance();
 
+  const incomeTotal = data.incomes.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
+
   document.getElementById("balance").textContent =
     money(balance);
 
   document.getElementById("summary").textContent =
     days + " ימי חיסכון × 60 ₪ = " +
     money(deposits) +
+    " | הכנסות נוספות: " +
+    money(incomeTotal) +
     " | סך הקניות: " +
     money(spent);
 
@@ -533,12 +558,13 @@ function render() {
     ...data.purchases.map(item => ({
       ...item,
       type: "purchase",
-      amount: item.price
+      amount: Number(item.price)
     })),
 
     ...data.incomes.map(item => ({
       ...item,
-      type: "income"
+      type: "income",
+      amount: Number(item.amount)
     }))
 
   ];
@@ -566,8 +592,10 @@ function render() {
 
     const name = document.createElement("div");
     name.className = "product-name";
+
     name.textContent =
-      (item.type === "income" ? "⬆ " : "⬇ ") + item.name;
+      (item.type === "income" ? "⬆ " : "⬇ ") +
+      item.name;
 
     const price = document.createElement("div");
     price.className = "product-price";
@@ -591,10 +619,12 @@ function render() {
 
     const date = document.createElement("div");
     date.className = "purchase-date";
+
     date.textContent = formatDate(item.date);
 
     top.append(name, price);
     box.append(top, balance, date);
+
     container.append(box);
 
   });
@@ -626,6 +656,7 @@ document.addEventListener("visibilitychange", () => {
   }
 
 });
+
 
 </script>
 
