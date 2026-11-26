@@ -372,11 +372,18 @@ function render() {
     date.className = "purchase-date";
     date.textContent = formatDate(item.date);
 
-    top.append(name, price);
+    const balance = document.createElement("div");
+balance.className = "purchase-date";
+balance.textContent =
+  "יתרה לאחר הקנייה: " + money(item.balanceAfter);
 
-    box.append(top, date);
+top.append(name, price);
 
-    container.append(box);
+box.append(top, balance, date);
+
+container.append(box);
+
+    
 
   });
 
@@ -403,15 +410,21 @@ function addPurchase() {
 
   
 
-  data.purchases.push({
+  const purchasePrice = Number(price.toFixed(2));
 
-    name: name,
+const balanceAfter = getBalance() - purchasePrice;
 
-    price: Number(price.toFixed(2)),
+data.purchases.push({
 
-    date: new Date().toISOString()
+  name: name,
 
-  });
+  price: purchasePrice,
+
+  balanceAfter: Number(balanceAfter.toFixed(2)),
+
+  date: new Date().toISOString()
+
+});
 
   saveData();
 
